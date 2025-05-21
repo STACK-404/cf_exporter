@@ -29,6 +29,11 @@ The Cloud Foundry Prometheus Exporter gets information from the [Cloud Foundry A
   * Space Quota information
 * Stacks information:
   * Stack information (id, name)
+* Metadata information:
+  * Organization metadata (labels and annotations)
+  * Space metadata (labels and annotations)
+  * Application metadata (labels and annotations)
+  * Hierarchical metadata inheritance (org → space → app)
 
 ### What are the caveats when using this exporter?
 
@@ -54,9 +59,33 @@ firehose_container_metric_cpu_percentage
 
 The *on* specifies the matching label, in this case, the *application_id*. The *group_left* specifies what labels (*application_name*, *organization_name*, *space_name*) from the right metric (*cf_application_info*) should be merged into the left metric (*firehose_container_metric_cpu_percentage*).
 
+### How can I use metadata labels in Prometheus queries?
+
+The metadata collector provides hierarchical metadata from organizations, spaces, and applications. You can use these in Prometheus queries like:
+
+* Get all applications with their org metadata:
+```
+cf_application_metadata{label_key=~"org_.*"}
+```
+
+* Get applications in orgs with specific metadata:
+```
+cf_application_metadata{label_key=~"org_environment", label_value="production"}
+```
+
+* Get applications with specific space metadata:
+```
+cf_application_metadata{label_key=~"space_team", label_value="frontend"}
+```
+
+* Get all metadata for a specific application:
+```
+cf_application_metadata{application_name="my-app"}
+```
+
 ### How can I enable only a particular collector?
 
-The `filter.collectors` command flag allows you to filter what collectors will be enabled (if not set, all collectors will be enabled by default). Possible values are `Applications`, `Organizations`, `Routes`, `SecurityGroups`, `ServiceBindings`, `ServiceInstances`, `ServicePlans`, `Services`, `Spaces`, `Stacks` (or a combination of them).
+The `filter.collectors` command flag allows you to filter what collectors will be enabled (if not set, all collectors will be enabled by default). Possible values are `Applications`, `Organizations`, `Routes`, `SecurityGroups`, `ServiceBindings`, `ServiceInstances`, `ServicePlans`, `Services`, `Spaces`, `Stacks`, `Metadata` (or a combination of them).
 
 ### Can I target multiple Cloud Foundry API endpoints with a single exporter instance?
 

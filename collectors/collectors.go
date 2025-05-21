@@ -54,6 +54,11 @@ func NewCollector(
 		res.collectors = append(res.collectors, collector)
 	}
 
+	if filter.Enabled(filters.Metadata) {
+		collector := NewMetadataCollector(namespace, environment, deployment)
+		res.collectors = append(res.collectors, collector)
+	}
+
 	if filter.Enabled(filters.Organizations) {
 		collector := NewOrganizationsCollector(namespace, environment, deployment)
 		res.collectors = append(res.collectors, collector)

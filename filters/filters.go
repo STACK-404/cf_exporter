@@ -11,6 +11,7 @@ const (
 	Domains              = "domains"
 	Events               = "events"
 	IsolationSegments    = "isolationsegments"
+	Metadata             = "metadata"
 	Organizations        = "organizations"
 	Routes               = "routes"
 	SecurityGroups       = "securitygroups"
@@ -31,6 +32,7 @@ var (
 		Domains,
 		Events,
 		IsolationSegments,
+		Metadata,
 		Organizations,
 		Routes,
 		SecurityGroups,
@@ -56,6 +58,7 @@ func NewFilter(active ...string) (*Filter, error) {
 			Buildpacks:           true,
 			Domains:              true,
 			IsolationSegments:    true,
+			Metadata:             true,
 			Organizations:        true,
 			Routes:               true,
 			SecurityGroups:       true,
@@ -87,6 +90,7 @@ func (f *Filter) setActive(active []string) error {
 		Buildpacks:           false,
 		Domains:              false,
 		IsolationSegments:    false,
+		Metadata:             false,
 		Organizations:        false,
 		Routes:               false,
 		SecurityGroups:       false,

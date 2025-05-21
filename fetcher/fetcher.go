@@ -60,11 +60,20 @@ func (c *Fetcher) GetObjects() *models.CFObjects {
 func (c *Fetcher) workInit() {
 	c.worker.Reset()
 	c.worker.Push("info", c.fetchInfo)
-	c.worker.PushIf("organizations", c.fetchOrgs, filters.Applications, filters.Organizations)
+	
+	// Always fetch organizations and spaces if metadata is enabled
+	if c.worker.filter.Enabled(filters.Metadata) {
+		c.worker.Push("organizations", c.fetchOrgs)
+		c.worker.Push("spaces", c.fetchSpaces)
+		c.worker.Push("applications", c.fetchApplications)
+	} else {
+		c.worker.PushIf("organizations", c.fetchOrgs, filters.Applications, filters.Organizations)
+		c.worker.PushIf("spaces", c.fetchSpaces, filters.Applications, filters.Spaces)
+		c.worker.PushIf("applications", c.fetchApplications, filters.Applications)
+	}
+
 	c.worker.PushIf("org_quotas", c.fetchOrgQuotas, filters.Organizations)
-	c.worker.PushIf("spaces", c.fetchSpaces, filters.Applications, filters.Spaces)
 	c.worker.PushIf("space_quotas", c.fetchSpaceQuotas, filters.Spaces)
-	c.worker.PushIf("applications", c.fetchApplications, filters.Applications)
 	c.worker.PushIf("domains", c.fetchDomains, filters.Domains)
 	c.worker.PushIf("process", c.fetchProcesses, filters.Applications)
 	c.worker.PushIf("routes", c.fetchRoutes, filters.Routes)
@@ -98,4 +107,34 @@ func (c *Fetcher) fetch() *models.CFObjects {
 
 	result.Error = c.worker.Do(session, result)
 	return result
+}
+
+func (c *Fetcher) fetchOrgMetadata(session *SessionExt, result *models.CFObjects) error {
+	for _, org := range result.Orgs {
+		if org.Metadata != nil {
+			// Update the organization's metadata in the result
+			result.Orgs[org.GUID] = org
+		}
+	}
+	return nil
+}
+
+func (c *Fetcher) fetchSpaceMetadata(session *SessionExt, result *models.CFObjects) error {
+	for _, space := range result.Spaces {
+		if space.Metadata != nil {
+			// Update the space's metadata in the result
+			result.Spaces[space.GUID] = space
+		}
+	}
+	return nil
+}
+
+func (c *Fetcher) fetchAppMetadata(session *SessionExt, result *models.CFObjects) error {
+	for _, app := range result.Apps {
+		if app.Metadata != nil {
+			// Update the application's metadata in the result
+			result.Apps[app.GUID] = app
+		}
+	}
+	return nil
 }
